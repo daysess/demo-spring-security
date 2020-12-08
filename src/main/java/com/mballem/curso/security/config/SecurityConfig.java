@@ -7,10 +7,15 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.mballem.curso.security.domain.PerfilTipo;
 import com.mballem.curso.security.service.UsuarioService;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter{
+	
+	private static final String ADMIN = PerfilTipo.ADMIN.getDesc();
+	private static final String MEDICO = PerfilTipo.MEDICO.getDesc();
+	private static final String PACIENTE = PerfilTipo.PACIENTE.getDesc();
 	
 	@Autowired
 	UsuarioService usuarioService;
@@ -22,10 +27,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 		// acesso publico liberado.
 		.antMatchers("/webjars/**", "/css/**", "/images/**", "/js/**").permitAll()
 		.antMatchers("/", "/home").permitAll()
+		
 		// acessos privados admin
-		.antMatchers("/u/**").hasAuthority("ADMIN")
-		// acessos privados admin
-		.antMatchers("/medicos/**").hasAuthority("MEDICO")
+		.antMatchers("/u/**").hasAuthority(ADMIN)
+		// acessos privados especialidades
+		.antMatchers("/especialidades/**").hasAuthority(ADMIN)
+		
+		// acessos privados medicos
+		.antMatchers("/medicos/dados", "/medicos/salvar", "/medicos/editar").hasAnyAuthority(MEDICO, ADMIN)
+		.antMatchers("/medicos/**").hasAuthority(MEDICO)
+		
+		
+		// acessos privados pacientes
+		.antMatchers("/pacientes/**").hasAuthority(PACIENTE)
 		
 		.anyRequest().authenticated()
 		// configuracao da pagina de login e o acesso de usuario
