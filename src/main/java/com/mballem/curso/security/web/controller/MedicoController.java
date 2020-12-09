@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -63,5 +64,16 @@ public class MedicoController {
 		attr.addAttribute("medico", medico);
 		return "redirect:/medicos/dados";
 	}
+	
+	@GetMapping("/id/{idMedico}/excluir/especializacao/{idEspecializacao}")
+	public String excluirEspecializacaoPorMedico(@PathVariable("idMedico") Long idMedico, 
+												 @PathVariable("idEspecializacao") Long idEspecializacao,
+												 RedirectAttributes attr){
+		medicoService.excluirEspecializacaoPorMedico(idMedico, idEspecializacao);
+		attr.addAttribute("sucesso", "Especialidade removida com sucesso.");
+		return "redirect:/medicos/dados";
+	}
+	
+	// /medicos/id/' + idMedico + '/excluir/especializacao/
 	
 }

@@ -40,4 +40,10 @@ public class MedicoService {
 		return medicoRepository.findByEmailUsuario(email).orElse(new Medico());
 	}
 
+	@Transactional(readOnly = false)
+	public void excluirEspecializacaoPorMedico(Long idMedico, Long idEspecializacao) {
+		Medico medico = medicoRepository.findById(idMedico).get();
+		medico.getEspecialidades().removeIf(e -> e.getId().equals(idEspecializacao));
+	}
+
 }
