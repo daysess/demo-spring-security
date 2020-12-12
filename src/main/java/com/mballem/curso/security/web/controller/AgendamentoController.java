@@ -2,11 +2,14 @@ package com.mballem.curso.security.web.controller;
 
 import java.time.LocalDate;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.mballem.curso.security.domain.Agendamento;
 import com.mballem.curso.security.domain.Especialidade;
 import com.mballem.curso.security.domain.Paciente;
+import com.mballem.curso.security.domain.PerfilTipo;
 import com.mballem.curso.security.service.AgendamentoService;
 import com.mballem.curso.security.service.EspecialidadeService;
 import com.mballem.curso.security.service.PacienteService;
@@ -59,5 +63,23 @@ public class AgendamentoController {
 		return "redirect:/agendamentos/agendar";
 	}
 	
+		//abrir pagina de historico de agendamento do paciente
+		@GetMapping({"/historico/paciente", "/historico/consultas"})
+		public String historico() {
+			return "agendamento/historico-paciente";
+		}
+		
+		//localizar o historico de agendamentos por usuario logado
+		@GetMapping("/datatables/server/historico")
+		public ResponseEntity<?> historicoAgendamentosPorPaciente(HttpServletRequest request, @AuthenticationPrincipal User user){
+			if(user.getAuthorities().contains(new SimpleGrantedAuthority(PerfilTipo.PACIENTE.getDesc()))) {
+				return ResponseEntity.ok(agendamentoService.buscarHistoricoPorPacienteEmail(user.getUsername(), request));
+			}
+			if(user.getAuthorities().contains(new SimpleGrantedAuthority(PerfilTipo.MEDICO.getDesc()))) {
+				return ResponseEntity.ok(agendamentoService.buscarHistoricoPorMedicoEmail(user.getUsername(), request));
+			}
+			return ResponseEntity.notFound().build();
+		}
+		
 	
 }
