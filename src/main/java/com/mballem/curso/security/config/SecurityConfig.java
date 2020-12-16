@@ -30,6 +30,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 		.antMatchers("/webjars/**", "/css/**", "/images/**", "/js/**").permitAll()
 		.antMatchers("/", "/home").permitAll()
 		.antMatchers("/u/novo/cadastro", "/u/cadastro/realizado", "/u/cadastro/paciente/salvar").permitAll()
+		.antMatchers("/u/confirmacao/cadastro").permitAll()
+		.antMatchers("/u/p/**").permitAll()
 		
 		// acessos privados admin
 		.antMatchers("/u/editar/senha", "/u/confirmar/senha").hasAnyAuthority(MEDICO, PACIENTE)
@@ -39,6 +41,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 		.antMatchers("/medicos/especialidade/titulo/*").hasAnyAuthority(MEDICO, PACIENTE)
 		.antMatchers("/medicos/dados", "/medicos/salvar", "/medicos/editar").hasAnyAuthority(MEDICO, ADMIN)
 		.antMatchers("/medicos/**").hasAuthority(MEDICO)
+		
 				
 		// acessos privados pacientes
 		.antMatchers("/pacientes/**").hasAuthority(PACIENTE)
@@ -64,7 +67,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 			
 		.and()
 			.exceptionHandling()
-			.accessDeniedPage("/acesso-negado");
+			.accessDeniedPage("/acesso-negado")
+		.and()
+			.rememberMe();
 		
 	}
 

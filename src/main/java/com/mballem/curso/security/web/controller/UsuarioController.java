@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -152,7 +154,7 @@ public class UsuarioController {
 	
 	//recebe o form da página cadastrar-se
 	@PostMapping("cadastro/paciente/salvar")
-	public String salvarCadastroPaciente(Usuario usuario, BindingResult result) {
+	public String salvarCadastroPaciente(Usuario usuario, BindingResult result) throws MessagingException {
 		try {
 			usuarioService.salvarCadastroPaciente(usuario);
 		} catch (DataIntegrityViolationException e) {
@@ -162,6 +164,45 @@ public class UsuarioController {
 		return "redirect:/u/cadastro/realizado";
 		
 	}
+	
+	@GetMapping("/confirmacao/cadastro")
+	public String respostaConfirmacaoCadastroPaciente(@RequestParam("codigo") String codigo, 
+													  RedirectAttributes attr) {
+		usuarioService.ativarCadastroPaciente(codigo);
+		attr.addFlashAttribute("alerta","sucesso");
+		attr.addFlashAttribute("titulo","Cadastro ativado!");
+		attr.addFlashAttribute("texto","Paragéns, seu cadastro está ativo.");
+		attr.addFlashAttribute("subtexto","Siga com seu login/senha.");
+		return "redirect:/login";
+	}
 
+	//abrir pagina do pedido de redefinicao de senha
+	@GetMapping("/p/redefinir/senha")
+	public String pedidoRedefinirSenha() {
+		return "usuario/pedido-recuperar-senha";
+	}
+	
+	@GetMapping("/p/recuperar/senha")
+	public String redefinirSenha(String email, ModelMap model) throws MessagingException {
+		usuarioService.pedidoRedefinicaoDeSenha(email);
+		model.addAttribute("sucesso", "Em instantes você receberá um email para prosseguir com a redefinição de sua senha.");
+		model.addAttribute("usuario", new Usuario(email));
+		return "usuario/recuperar-senha";
+	}
+	
+	@PostMapping("/p/nova/senha")
+	public String confirmacaoDeRedefinicaoSenha(Usuario usuario, ModelMap model) {
+		Usuario u = usuarioService.buscarPorEmail(usuario.getEmail());
+		if(!usuario.getCodigoVerificador().equals(u.getCodigoVerificador())) {
+			model.addAttribute("falha", "Código verificador não confere.");
+			return "usuario/recuperar-senha";
+		}
+		u.setCodigoVerificador(null);
+		usuarioService.alterarSenha(u, usuario.getSenha());
+		model.addAttribute("alerta", "sucesso");
+		model.addAttribute("titulo", "Senha redefinida!");
+		model.addAttribute("texto", "Você já pode logar o sistema.");
+		return "login";
+	}
 
 }
